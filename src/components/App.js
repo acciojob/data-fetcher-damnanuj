@@ -3,17 +3,26 @@ import './../styles/App.css';
 
 const App = () => {
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState(null); // Initialize `data` as null to avoid rendering issues.
+  const [data, setData] = useState(null); // To store fetched data
+  const [error, setError] = useState(null); // To store error messages
+
   const api = `https://dummyjson.com/products`;
 
   const fetchData = async () => {
     setLoading(true);
+    setError(null); // Reset error before fetching
     try {
       const response = await fetch(api);
       const result = await response.json(); // Parse the response as JSON
-      setData(result); // Set the entire JSON response
+
+      // Handle empty data
+      if (result.products && result.products.length > 0) {
+        setData(result); // Set data if available
+      } else {
+        setData(null); // Set data to null if no products are returned
+      }
     } catch (error) {
-      console.error("Error fetching data:", error);
+      setError("Error fetching data: " + error.message); // Set error message if something goes wrong
     } finally {
       setLoading(false);
     }
@@ -25,11 +34,16 @@ const App = () => {
 
   return (
     <div>
-      <h1>Data Fetched from API </h1>
+      <h1>Fetched Data</h1>
+
       {loading ? (
-        <p>Loading...</p>
+        <p>Loading...</p> // Show loading message
+      ) : error ? (
+        <p>{error}</p> // Display error message
+      ) : data ? (
+        <pre>{JSON.stringify(data, null, 2)}</pre> // Display data in JSON format
       ) : (
-        <pre>{data ? JSON.stringify(data, null, 2) : "No data"}</pre>
+        <p>No data found</p> // Show "No data found" message if no data is returned
       )}
     </div>
   );
